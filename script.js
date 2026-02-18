@@ -150,7 +150,7 @@
 
       var formData = new FormData(form);
 
-      fetch('https://formsubmit.co/ajax/hello@commongroundhoa.com', {
+      fetch('/api/contact', {
         method: 'POST',
         body: formData
       })
