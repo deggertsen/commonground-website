@@ -142,25 +142,50 @@
         return;
       }
 
-      // Simulate submission (replace with real endpoint)
       var btn = form.querySelector('button[type="submit"]');
       if (btn) {
         btn.disabled = true;
         btn.textContent = 'Sending…';
       }
 
-      setTimeout(function () {
-        form.reset();
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = 'Schedule a Free Audit';
-        }
-        if (status) {
-          status.textContent = 'Thank you! We\'ll be in touch shortly.';
-          status.className = 'form-status success';
-        }
-        showToast();
-      }, 800);
+      var formData = new FormData(form);
+
+      fetch('https://formsubmit.co/ajax/hello@commongroundhoa.com', {
+        method: 'POST',
+        body: formData
+      })
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (data) {
+          form.reset();
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Schedule a Free Audit';
+          }
+          if (data.success) {
+            if (status) {
+              status.textContent = 'Thank you! We\'ll be in touch shortly.';
+              status.className = 'form-status success';
+            }
+            showToast();
+          } else {
+            if (status) {
+              status.textContent = 'Something went wrong. Please email us directly at hello@commongroundhoa.com';
+              status.className = 'form-status error';
+            }
+          }
+        })
+        .catch(function () {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Schedule a Free Audit';
+          }
+          if (status) {
+            status.textContent = 'Something went wrong. Please email us directly at hello@commongroundhoa.com';
+            status.className = 'form-status error';
+          }
+        });
     });
   }
 
