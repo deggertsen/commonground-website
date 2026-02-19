@@ -148,42 +148,53 @@
         btn.textContent = 'Sending…';
       }
 
-      var formData = new FormData(form);
+      var name = form.querySelector('[name="name"]').value.trim();
+      var community = form.querySelector('[name="community"]').value.trim();
+      var email = form.querySelector('[name="email"]').value.trim();
+      var units = form.querySelector('[name="units"]').value.trim();
+      var message = form.querySelector('[name="message"]').value.trim();
 
-      fetch('/api/contact', {
+      var subject = encodeURIComponent('Free Audit Request: ' + (community || name));
+      var body = encodeURIComponent(
+        'Name: ' + name + '\n' +
+        'Community: ' + community + '\n' +
+        'Email: ' + email + '\n' +
+        'Number of Units: ' + units + '\n' +
+        'Message: ' + message
+      );
+
+      // Send via Google Apps Script endpoint if available
+      var payload = JSON.stringify({
+        name: name,
+        community: community,
+        email: email,
+        units: units,
+        message: message
+      });
+
+      fetch('https://script.google.com/macros/s/APPS_SCRIPT_ID/exec', {
         method: 'POST',
-        body: formData
+        body: payload,
+        headers: { 'Content-Type': 'text/plain' }
       })
-        .then(function (response) {
-          return response.json();
-        })
+        .then(function (response) { return response.json(); })
         .then(function (data) {
           form.reset();
-          if (btn) {
-            btn.disabled = false;
-            btn.textContent = 'Schedule a Free Audit';
+          if (btn) { btn.disabled = false; btn.textContent = 'Schedule a Free Audit'; }
+          if (status) {
+            status.textContent = 'Thank you! We\'ll be in touch shortly.';
+            status.className = 'form-status success';
           }
-          if (data.success) {
-            if (status) {
-              status.textContent = 'Thank you! We\'ll be in touch shortly.';
-              status.className = 'form-status success';
-            }
-            showToast();
-          } else {
-            if (status) {
-              status.textContent = 'Something went wrong. Please email us directly at hello@commongroundhoa.com';
-              status.className = 'form-status error';
-            }
-          }
+          showToast();
         })
         .catch(function () {
-          if (btn) {
-            btn.disabled = false;
-            btn.textContent = 'Schedule a Free Audit';
-          }
+          // Fallback: open mailto link
+          window.location.href = 'mailto:hello@commongroundhoa.com?subject=' + subject + '&body=' + body;
+          form.reset();
+          if (btn) { btn.disabled = false; btn.textContent = 'Schedule a Free Audit'; }
           if (status) {
-            status.textContent = 'Something went wrong. Please email us directly at hello@commongroundhoa.com';
-            status.className = 'form-status error';
+            status.textContent = 'Opening your email client to send. If nothing happens, email hello@commongroundhoa.com directly.';
+            status.className = 'form-status success';
           }
         });
     });
